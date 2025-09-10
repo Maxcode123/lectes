@@ -29,14 +29,6 @@ class Regex:
     def from_re(cls, pattern: re.Pattern) -> "Regex":
         return Regex(pattern.pattern)
 
-    def match(self, string: str) -> Match | None:
-        match = self._pattern.match(string)
-
-        if match is None:
-            return None
-
-        return Match.from_re(match)
-
     def search(self, string: str) -> Match | None:
         match = self._pattern.search(string)
 
