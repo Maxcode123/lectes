@@ -16,7 +16,6 @@ class Scanner:
 
         self.set_text(text)
 
-        self.current_position = 1
         for _ in text:
             for rule in self.configuration.rules:
                 current_string = self.current_string()
@@ -34,7 +33,7 @@ class Scanner:
 
     def set_text(self, text: str) -> None:
         self.text = text
-        self.current_position = 0
+        self.current_position = 1
         self.last_position = 0
 
     def current_string(self) -> str:
