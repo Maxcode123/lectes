@@ -1,5 +1,5 @@
 lint:
-	ruff check
+	ruff check --exclude src/lectes/tests
 
 format:
 	ruff format ./
