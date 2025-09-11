@@ -22,6 +22,9 @@ class Match:
     def __bool__(self) -> bool:
         return True
 
+    def __len__(self) -> int:
+        return len(self.string)
+
 
 class Regex:
     def __init__(self, pattern: str) -> None:
