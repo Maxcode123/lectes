@@ -1,6 +1,7 @@
 from typing import Callable, Generator
 
-from lectes.config.models import Configuration
+from lectes.config.models import Configuration, Rule
+from lectes.engine.models import Match
 from lectes.scanner.models import Token
 from lectes.scanner.logger import Logger, LogLevel
 
@@ -12,6 +13,8 @@ class Scanner:
         self._unmatched_handler = self._handle_unmatched
         self._debug = debug
         self._logger = None
+        self._match = None
+        self._matched_rule = None
 
     def scan(self, text: str) -> Generator[Token]:
         if len(text) == 0:
@@ -39,16 +42,19 @@ class Scanner:
                     self.logger().debug(
                         f"rule {rule.name} matched current_string: '{current_string}'"
                     )
+                    self._update_matched_state(rule, match)
 
-                    if match.unmatched is not None:
-                        self._unmatched_handler(match.unmatched)
+            if self._match is not None:
+                if self._match.unmatched is not None:
+                    self._unmatched_handler(self._match.unmatched)
 
-                    yield Token(rule=rule, literal=match.string)
+                if self._matched_rule is not None:
+                    yield Token(rule=self._matched_rule, literal=self._match.string)
 
-                    self.last_position = self.current_position
-                    break
+                self.last_position = self.current_position
 
             self.current_position += 1
+            self._reset_matched_state()
 
     def set_unmatched_handler(self, handler: Callable[[str], None]) -> None:
         self._unmatched_handler = handler
@@ -80,6 +86,16 @@ class Scanner:
 
     def _is_last_char(self) -> bool:
         return self.current_position == len(self.text)
+
+    def _update_matched_state(self, rule: Rule, match: Match) -> None:
+        if self._match is None or len(match) > len(self._match):
+            self.logger().debug(f"updating match from {self._match} to {match.string}")
+            self._matched_rule = rule
+            self._match = match
+
+    def _reset_matched_state(self) -> None:
+        self._match = None
+        self._matched_rule = None
 
     @staticmethod
     def _handle_unmatched(unmatched: str) -> None:
