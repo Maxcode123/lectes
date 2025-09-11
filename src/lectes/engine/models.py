@@ -32,6 +32,14 @@ class Regex:
     def from_re(cls, pattern: re.Pattern) -> "Regex":
         return Regex(pattern.pattern)
 
+    def fullmatch(self, string: str) -> Match | None:
+        match = self._compiled_pattern().fullmatch(string)
+
+        if match is None:
+            return None
+
+        return Match.from_re(match)
+
     def search(self, string: str) -> Match | None:
         match = self._compiled_pattern().search(string)
 
