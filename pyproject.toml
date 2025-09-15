@@ -17,4 +17,5 @@ dependencies = []
 [dependency-groups]
 dev = [
     "ty>=0.0.1a20",
+    "unittest-extensions>=0.4.0",
 ]
