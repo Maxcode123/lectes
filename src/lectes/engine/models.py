@@ -37,6 +37,7 @@ class Match:
         return len(self.string)
 
 
+@dataclass(init=False)
 class Regex:
     """
     Represents a regular expression.
@@ -95,3 +96,6 @@ class Regex:
 
     def __repr__(self) -> str:
         return f"<Regex: {self._compiled_pattern().pattern}>"
+
+    def __hash__(self) -> int:
+        return hash(self._pattern)
