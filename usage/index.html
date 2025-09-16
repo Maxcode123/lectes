@@ -474,6 +474,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#defining-custom-handlers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Defining custom handlers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#handling-unmatched-text" class="md-nav__link">
     <span class="md-ellipsis">
       Handling unmatched text
@@ -631,6 +640,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#defining-custom-handlers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Defining custom handlers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#handling-unmatched-text" class="md-nav__link">
     <span class="md-ellipsis">
       Handling unmatched text
@@ -708,26 +726,65 @@ A <code>Rule</code> is just a named regex pattern.</p>
 </span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">scanner</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="s2">&quot;for var in array:&quot;</span><span class="p">):</span>
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>  <span class="nb">print</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
 </span></code></pre></div>
+<h3 id="defining-custom-handlers">Defining custom handlers</h3>
+<p>When a rule is matched, the default behaviour of the scanner is to yield a
+<code>Token</code> object. This behaviour can be tweaked by defining custom handlers
+for individual rules.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">lectes</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rule</span><span class="p">,</span> <span class="n">Regex</span><span class="p">,</span> <span class="n">Configuration</span><span class="p">,</span> <span class="n">Scanner</span><span class="p">,</span> <span class="n">Token</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">config</span> <span class="o">=</span> <span class="n">Configuration</span><span class="p">(</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  <span class="p">[</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span class="n">Rule</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;FOR&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="n">Regex</span><span class="p">(</span><span class="s2">&quot;for&quot;</span><span class="p">)),</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="n">Rule</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;IN&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="n">Regex</span><span class="p">(</span><span class="s2">&quot;in&quot;</span><span class="p">)),</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="n">Rule</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;ID&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="n">Regex</span><span class="p">(</span><span class="s2">&quot;[a-zA-Z_][a-zA-Z_0-9]*&quot;</span><span class="p">)),</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">Rule</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;COLON&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="n">Regex</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)),</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">Rule</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;WHITESPACE&quot;</span><span class="p">,</span> <span class="n">regex</span><span class="o">=</span><span class="n">Regex</span><span class="p">(</span><span class="s2">&quot;( )&quot;</span><span class="p">)),</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>  <span class="p">]</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="p">)</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">def</span><span class="w"> </span><span class="nf">whitespace_handler</span><span class="p">(</span><span class="n">matched</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>  <span class="k">return</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="n">ids</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="k">def</span><span class="w"> </span><span class="nf">id_handler</span><span class="p">(</span><span class="n">matched</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>  <span class="n">ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">matched</span><span class="p">)</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>  <span class="k">return</span> <span class="n">Token</span><span class="p">(</span><span class="n">rule</span><span class="o">=</span><span class="n">rule</span><span class="p">,</span> <span class="n">literal</span><span class="o">=</span><span class="n">matched</span><span class="p">)</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="c1"># You don&#39;t have to return a Token</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="k">def</span><span class="w"> </span><span class="nf">for_handler</span><span class="p">(</span><span class="n">matched</span><span class="p">,</span> <span class="n">rule</span><span class="p">):</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>  <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;matched&quot;</span><span class="p">:</span> <span class="n">matched</span><span class="p">,</span> <span class="s2">&quot;rule&quot;</span><span class="p">:</span> <span class="n">rule</span><span class="p">}</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="n">scanner</span> <span class="o">=</span> <span class="n">Scanner</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="n">scanner</span><span class="o">.</span><span class="n">set_handler</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">for_handler</span><span class="p">)</span>
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span class="n">scanner</span><span class="o">.</span><span class="n">set_handler</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">id_handler</span><span class="p">)</span>
+</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span class="n">scanner</span><span class="o">.</span><span class="n">set_handler</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span> <span class="n">whitespace_handler</span><span class="p">)</span>
+</span><span id="__span-2-30"><a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>
+</span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span class="k">for</span> <span class="n">token</span> <span class="ow">in</span> <span class="n">scanner</span><span class="o">.</span><span class="n">scan</span><span class="p">(</span><span class="s2">&quot;for var in array:&quot;</span><span class="p">):</span>
+</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>  <span class="nb">print</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+</span><span id="__span-2-33"><a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>
+</span><span id="__span-2-34"><a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a><span class="nb">print</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+</span></code></pre></div>
 <h3 id="handling-unmatched-text">Handling unmatched text</h3>
 <p>The default behaviour of the scanner is to print the text that does not match
 any rule. The default behaviour can be changed by defining a custom handler for
 unmatched text.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">unmatched_text</span> <span class="o">=</span> <span class="p">[]</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">handler</span><span class="p">(</span><span class="n">unmatched</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  <span class="n">unmatched_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unmatched</span><span class="p">)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="n">scanner</span><span class="o">.</span><span class="n">set_unmatched_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">unmatched_text</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">handler</span><span class="p">(</span><span class="n">unmatched</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  <span class="n">unmatched_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">unmatched</span><span class="p">)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">scanner</span><span class="o">.</span><span class="n">set_unmatched_handler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="debugging">Debugging</h3>
 <p>The <code>debug</code> argument can be passed in order to print debug logs while scanning.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">scanner</span> <span class="o">=</span> <span class="n">Scanner</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">scanner</span> <span class="o">=</span> <span class="n">Scanner</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </span></code></pre></div>
 <p>If the scanner has already been initialized without the debug flag, the log level
 can also be set to <code>DEBUG</code> by accessing the scanner's logger.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">lectes</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogLevel</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">scanner</span><span class="o">.</span><span class="n">logger</span><span class="p">()</span><span class="o">.</span><span class="n">set_level</span><span class="p">(</span><span class="n">LogLevel</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">lectes</span><span class="w"> </span><span class="kn">import</span> <span class="n">LogLevel</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">scanner</span><span class="o">.</span><span class="n">logger</span><span class="p">()</span><span class="o">.</span><span class="n">set_level</span><span class="p">(</span><span class="n">LogLevel</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
 </span></code></pre></div>
 
 
