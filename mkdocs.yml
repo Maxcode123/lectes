@@ -1,0 +1,47 @@
+site_name: lectes
+site_url: https://maxcode123.github.io/lectes/
+repo_url: https://github.com/Maxcode123/lectes
+repo_name: Maxcode123/lectes
+nav:
+  - Get started:
+    - What is lectes?: index.md
+    - Installation: installation.md
+    - Usage: usage.md
+
+  - API Documentation:
+    - scanner: scanner.md
+ 
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.path
+    - content.code.copy
+  palette:
+    - scheme: default
+      primary: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+plugins:
+- mkdocstrings
+- search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences

@@ -3,10 +3,18 @@ from enum import Enum
 
 
 class LogLevel(Enum):
+    """
+    Log level options for the scanner's logger.
+    """
+
     DEBUG = "DEBUG"
 
 
 class Logger:
+    """
+    Logger class for the scanner.
+    """
+
     def __init__(self) -> None:
         self._logger = None
         self._handler = None
