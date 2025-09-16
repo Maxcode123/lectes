@@ -43,6 +43,49 @@ for token in scanner.scan("for var in array:"):
   print(token)
 ```
 
+### Defining custom handlers
+
+When a rule is matched, the default behaviour of the scanner is to yield a
+`Token` object. This behaviour can be tweaked by defining custom handlers
+for individual rules.
+
+```python
+from lectes import Rule, Regex, Configuration, Scanner, Token
+
+config = Configuration(
+  [
+    Rule(name="FOR", regex=Regex("for")),
+    Rule(name="IN", regex=Regex("in")),
+    Rule(name="ID", regex=Regex("[a-zA-Z_][a-zA-Z_0-9]*")),
+    Rule(name="COLON", regex=Regex(":")),
+    Rule(name="WHITESPACE", regex=Regex("( )")),
+  ]
+)
+
+def whitespace_handler(matched, rule):
+  return
+
+ids = []
+
+def id_handler(matched, rule):
+  ids.append(matched)
+  return Token(rule=rule, literal=matched)
+
+# You don't have to return a Token
+def for_handler(matched, rule):
+  return {"matched": matched, "rule": rule}
+
+scanner = Scanner(config)
+scanner.set_handler(config.rules[0], for_handler)
+scanner.set_handler(config.rules[2], id_handler)
+scanner.set_handler(config.rules[4], whitespace_handler)
+
+for token in scanner.scan("for var in array:"):
+  print(token)
+
+print(ids)
+```
+
 ### Handling unmatched text
 
 The default behaviour of the scanner is to print the text that does not match
