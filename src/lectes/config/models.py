@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from lectes.engine.models import Regex
 
 
-@dataclass
+@dataclass(frozen=True)
 class Rule:
     """
     Represents a scanner configuration rule.
