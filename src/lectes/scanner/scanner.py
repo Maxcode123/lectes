@@ -1,4 +1,4 @@
-from typing import Callable, Generator
+from typing import Callable, Generator, Any
 
 from lectes.config.models import Configuration, Rule
 from lectes.engine.models import Match
@@ -36,6 +36,9 @@ class Scanner:
         self.configuration = configuration
         self.set_text("")
         self._unmatched_handler = self._handle_unmatched
+        self._matched_handlers = {
+            rule: self._handle_matched for rule in configuration.rules
+        }
         self._debug = debug
         self._logger = None
         self._match = None
@@ -77,7 +80,12 @@ class Scanner:
                     self._unmatched_handler(self._match.unmatched)
 
                 if self._matched_rule is not None:
-                    yield Token(rule=self._matched_rule, literal=self._match.string)
+                    result = self._matched_handlers[self._matched_rule](
+                        self._match.string, self._matched_rule
+                    )
+
+                    if result is not None:
+                        yield result
 
                 self.last_position = self.current_position
 
@@ -92,6 +100,15 @@ class Scanner:
         The handler receives the string as argument and does returns None.
         """
         self._unmatched_handler = handler
+
+    def set_handler(self, rule: Rule, handler: Callable[[str, Rule], Any]) -> None:
+        """
+        Set the given function as the handler that executes when a string is matched
+        against rule.
+
+        The handler should receive the matched string literal and the rule as arguments.
+        """
+        self._matched_handlers[rule] = handler
 
     def set_text(self, text: str) -> None:
         """
@@ -148,3 +165,7 @@ class Scanner:
     @staticmethod
     def _handle_unmatched(unmatched: str) -> None:
         print(f"unmatched: {unmatched}")
+
+    @staticmethod
+    def _handle_matched(matched: str, rule: Rule) -> Token:
+        return Token(rule=rule, literal=matched)

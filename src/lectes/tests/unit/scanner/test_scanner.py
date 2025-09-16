@@ -1,3 +1,4 @@
+from typing import Literal
 from unittest_extensions import args, TestCase
 
 from lectes.config.models import Rule, Configuration
@@ -282,4 +283,70 @@ oper: int initus() {
             "RPAREN",
             "NEWLINE",
             "RBRACK",
+        )
+
+
+class TestScannerIgnoreWhitespace(TestScanner):
+    def scanner(self):
+        scanner = Scanner(self.configuration())
+        scanner.set_handler(self.rules()[1], self.ignore_whitespace)
+        return scanner
+
+    def rules(self):
+        return [
+            rule("ID", "[a-zA-Z_]+[a-zA-Z_]*"),
+            rule("WHITESPACE", "( )"),
+        ]
+
+    @staticmethod
+    def ignore_whitespace(matched: str, rule: Rule) -> None:
+        return
+
+    @args("yet another test only ids matchhh")
+    def test_ignore_whitespace(self):
+        self.assert_tokens("ID", "ID", "ID", "ID", "ID", "ID")
+
+
+class TestScannerCustomHandler(TestScanner):
+    class MyObj:
+        def __init__(self, literal, rule) -> None:
+            self.literal = literal
+            self.rule = rule
+
+    def scanner(self):
+        scanner = Scanner(self.configuration())
+        {scanner.set_handler(rule, self.handler) for rule in self.configuration().rules}
+        return scanner
+
+    def rules(self):
+        return [
+            rule("IF", "if"),
+            rule("WHEN", "when"),
+            rule("ID", "[a-zA-Z_]*"),
+            rule("WHITESPACE", "( )"),
+        ]
+
+    @staticmethod
+    def handler(matched, rule):
+        return TestScannerCustomHandler.MyObj(matched, rule)
+
+    def assert_objs(self, *matched):
+        self.assertSequenceEqual(
+            list(map(lambda o: o.rule.name, self.result())), matched
+        )
+
+    @args("if yoyo when then is myvar")
+    def test_return_custom_objs(self):
+        self.assert_objs(
+            "IF",
+            "WHITESPACE",
+            "ID",
+            "WHITESPACE",
+            "WHEN",
+            "WHITESPACE",
+            "ID",
+            "WHITESPACE",
+            "ID",
+            "WHITESPACE",
+            "ID",
         )
