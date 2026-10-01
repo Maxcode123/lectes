@@ -100,7 +100,7 @@ the tokens before the unmatched text have already been yielded when the error
 is raised.
 
 ```python
-from lectes.scanner.errors import UnmatchedTextError
+from lectes import UnmatchedTextError
 
 try:
   tokens = list(scanner.scan("for var in array?"))
@@ -121,7 +121,7 @@ behaviour of raising an error. A custom handler cannot be combined with
 `ignore_unmatched=True`; trying to set one raises a `ScannerConfigurationError`.
 
 ```python
-from lectes.scanner.models import UnmatchedText
+from lectes import UnmatchedText
 
 unmatched_text = []
 

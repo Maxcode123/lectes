@@ -2,4 +2,15 @@ from .config.models import Rule as Rule, Configuration as Configuration
 from .engine.models import Regex as Regex
 from .scanner.scanner import Scanner as Scanner
 from .scanner.logger import LogLevel as LogLevel
-from .scanner.models import Token as Token
+from .scanner.models import (
+    Token as Token,
+    Location as Location,
+    UnmatchedText as UnmatchedText,
+)
+from .errors import LectesError as LectesError
+from .engine.errors import RegexPatternError as RegexPatternError
+from .scanner.errors import (
+    ScannerError as ScannerError,
+    ScannerConfigurationError as ScannerConfigurationError,
+    UnmatchedTextError as UnmatchedTextError,
+)
