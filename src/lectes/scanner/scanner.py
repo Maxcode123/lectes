@@ -1,7 +1,7 @@
 from typing import Callable, Generator, Any
 
 from lectes.config.models import Configuration, Rule
-from lectes.scanner.models import Token
+from lectes.scanner.models import Location, Token
 from lectes.scanner.logger import Logger, LogLevel
 
 
@@ -52,33 +52,34 @@ class Scanner:
         Each contiguous run of text not matched by any rule is passed to the
         unmatched handler as a single string.
         """
-        position = 0
-        unmatched_start = None
+        cursor = _Cursor()
+        unmatched_location = None
 
-        while position < len(text):
-            rule, literal = self._longest_match(text, position)
+        while cursor.offset < len(text):
+            rule, literal = self._longest_match(text, cursor.offset)
 
             if rule is None:
-                if unmatched_start is None:
-                    unmatched_start = position
+                if unmatched_location is None:
+                    unmatched_location = cursor.location()
 
-                position += 1
+                cursor.advance(text[cursor.offset])
                 continue
 
-            if unmatched_start is not None:
-                self._flush_unmatched(text[unmatched_start:position])
-                unmatched_start = None
+            if unmatched_location is not None:
+                self._flush_unmatched(text[unmatched_location.offset : cursor.offset])
+                unmatched_location = None
 
             self.logger().debug(f"rule {rule.name} matched: '{literal}'")
-            result = self._matched_handlers[rule](literal, rule)
+            token = Token(rule=rule, literal=literal, location=cursor.location())
+            result = self._matched_handlers[rule](token)
 
             if result is not None:
                 yield result
 
-            position += len(literal)
+            cursor.advance(literal)
 
-        if unmatched_start is not None:
-            self._flush_unmatched(text[unmatched_start:])
+        if unmatched_location is not None:
+            self._flush_unmatched(text[unmatched_location.offset :])
 
     def set_unmatched_handler(self, handler: Callable[[str], None]) -> None:
         """
@@ -89,12 +90,13 @@ class Scanner:
         """
         self._unmatched_handler = handler
 
-    def set_handler(self, rule: Rule, handler: Callable[[str, Rule], Any]) -> None:
+    def set_handler(self, rule: Rule, handler: Callable[[Token], Any]) -> None:
         """
         Set the given function as the handler that executes when a string is matched
         against rule.
 
-        The handler should receive the matched string literal and the rule as arguments.
+        The handler receives the matched Token. Whatever it returns, except None,
+        is yielded by `scan`; returning None skips the token.
         """
         self._matched_handlers[rule] = handler
 
@@ -138,5 +140,32 @@ class Scanner:
         print(f"unmatched: {unmatched}")
 
     @staticmethod
-    def _handle_matched(matched: str, rule: Rule) -> Token:
-        return Token(rule=rule, literal=matched)
+    def _handle_matched(token: Token) -> Token:
+        return token
+
+
+class _Cursor:
+    """
+    Tracks the offset, line and column of the scanner while it reads a text.
+    """
+
+    def __init__(self) -> None:
+        self.offset = 0
+        self._line = 1
+        self._line_start = 0
+
+    def location(self) -> Location:
+        return Location(
+            offset=self.offset,
+            line=self._line,
+            column=self.offset - self._line_start + 1,
+        )
+
+    def advance(self, consumed: str) -> None:
+        newlines = consumed.count("\n")
+
+        if newlines:
+            self._line += newlines
+            self._line_start = self.offset + consumed.rfind("\n") + 1
+
+        self.offset += len(consumed)

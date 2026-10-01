@@ -46,8 +46,13 @@ for token in scanner.scan("for var in array:"):
 ### Defining custom handlers
 
 When a rule is matched, the default behaviour of the scanner is to yield a
-`Token` object. This behaviour can be tweaked by defining custom handlers
-for individual rules.
+`Token` object. A token holds the matched `rule`, the matched `literal` and the
+`location` where the literal starts in the text (its `offset`, `line` and
+`column`).
+
+This behaviour can be tweaked by defining custom handlers for individual rules.
+A handler receives the matched `Token`; whatever it returns is yielded by the
+scanner, unless it returns `None`, in which case the token is skipped.
 
 ```python
 from lectes import Rule, Regex, Configuration, Scanner, Token
@@ -62,18 +67,18 @@ config = Configuration(
   ]
 )
 
-def whitespace_handler(matched, rule):
+def whitespace_handler(token: Token) -> None:
   return
 
 ids = []
 
-def id_handler(matched, rule):
-  ids.append(matched)
-  return Token(rule=rule, literal=matched)
+def id_handler(token: Token) -> Token:
+  ids.append(token.literal)
+  return token
 
 # You don't have to return a Token
-def for_handler(matched, rule):
-  return {"matched": matched, "rule": rule}
+def for_handler(token: Token) -> dict:
+  return {"matched": token.literal, "line": token.location.line}
 
 scanner = Scanner(config)
 scanner.set_handler(config.rules[0], for_handler)

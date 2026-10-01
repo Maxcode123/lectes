@@ -1,9 +1,11 @@
+from dataclasses import FrozenInstanceError
 from typing import Literal
 from unittest_extensions import args, TestCase
 
 from lectes.config.models import Rule, Configuration
 from lectes.engine.models import Regex
 from lectes.engine.errors import RegexPatternError
+from lectes.scanner.models import Location, Token
 from lectes.scanner.scanner import Scanner
 
 
@@ -322,7 +324,7 @@ class TestScannerIgnoreWhitespace(TestScanner):
         ]
 
     @staticmethod
-    def ignore_whitespace(matched: str, rule: Rule) -> None:
+    def ignore_whitespace(token: Token) -> None:
         return
 
     @args("yet another test only ids matchhh")
@@ -350,8 +352,8 @@ class TestScannerCustomHandler(TestScanner):
         ]
 
     @staticmethod
-    def handler(matched, rule):
-        return TestScannerCustomHandler.MyObj(matched, rule)
+    def handler(token):
+        return TestScannerCustomHandler.MyObj(token.literal, token.rule)
 
     def assert_objs(self, *matched):
         self.assertSequenceEqual(
@@ -674,7 +676,7 @@ class TestRoundTrip(TestCase):
         scanner = Scanner(Configuration(self.RULES))
         scanner.set_unmatched_handler(pieces.append)
         for r in self.RULES:
-            scanner.set_handler(r, lambda literal, _rule: pieces.append(literal))
+            scanner.set_handler(r, lambda token: pieces.append(token.literal))
         list(scanner.scan(text))
         return "".join(pieces)
 
@@ -722,34 +724,100 @@ class TestUnicodeIdentifiers(TestScanner):
 
 
 class TestHandlers(TestCase):
-    def test_handler_receives_literal_and_rule(self):
+    def test_handler_receives_token(self):
         number = rule("INT", "[0-9]+")
         received = []
         scanner = Scanner(Configuration([number, rule("WS", " ")]))
-        scanner.set_handler(number, lambda lit, r: received.append((lit, r)))
+        scanner.set_handler(number, received.append)
         list(scanner.scan("12 345"))
-        self.assertEqual(received, [("12", number), ("345", number)])
+        self.assertEqual(
+            received,
+            [
+                Token(rule=number, literal="12", location=Location(0, 1, 1)),
+                Token(rule=number, literal="345", location=Location(3, 1, 4)),
+            ],
+        )
 
     def test_handler_return_value_is_yielded(self):
         number = rule("INT", "[0-9]+")
         scanner = Scanner(Configuration([number]))
-        scanner.set_handler(number, lambda lit, _r: int(lit))
+        scanner.set_handler(number, lambda token: int(token.literal))
         self.assertEqual(list(scanner.scan("42")), [42])
 
     def test_handler_only_affects_its_rule(self):
         number = rule("INT", "[0-9]+")
         word = rule("ID", "[a-z]+")
         scanner = Scanner(Configuration([number, word]))
-        scanner.set_handler(number, lambda lit, _r: None)
+        scanner.set_handler(number, lambda _token: None)
         self.assertEqual([t.name for t in scanner.scan("ab12cd")], ["ID", "ID"])
 
     def test_rules_with_same_name_and_different_regex_keep_separate_handlers(self):
         lower = rule("WORD", "[a-z]+")
         upper = rule("WORD", "[A-Z]+")
         scanner = Scanner(Configuration([lower, upper]))
-        scanner.set_handler(lower, lambda lit, _r: ("lower", lit))
-        scanner.set_handler(upper, lambda lit, _r: ("upper", lit))
+        scanner.set_handler(lower, lambda token: ("lower", token.literal))
+        scanner.set_handler(upper, lambda token: ("upper", token.literal))
         self.assertEqual(list(scanner.scan("abCD")), [("lower", "ab"), ("upper", "CD")])
+
+
+class TestTokenLocations(TestScanner):
+    def rules(self):
+        return [
+            rule("COMMENT", r"/\*[\s\S]*?\*/"),
+            rule("ID", "[a-z]+"),
+            rule("WHITESPACE", "[ \t]+"),
+            rule("NEWLINE", "\r?\n"),
+        ]
+
+    def assert_locations(self, *locations):
+        self.assertSequenceEqual(
+            [(t.literal, t.location) for t in self.result() if t.name == "ID"],
+            locations,
+        )
+
+    @args("ab cd\nef\n  gh")
+    def test_multi_line_text(self):
+        self.assert_locations(
+            ("ab", Location(offset=0, line=1, column=1)),
+            ("cd", Location(offset=3, line=1, column=4)),
+            ("ef", Location(offset=6, line=2, column=1)),
+            ("gh", Location(offset=11, line=3, column=3)),
+        )
+
+    @args("\tab")
+    def test_tab_counts_as_one_column(self):
+        self.assert_locations(("ab", Location(offset=1, line=1, column=2)))
+
+    @args("ab\r\ncd")
+    def test_windows_line_endings(self):
+        self.assert_locations(
+            ("ab", Location(offset=0, line=1, column=1)),
+            ("cd", Location(offset=4, line=2, column=1)),
+        )
+
+    @args("/* a\n b */x")
+    def test_multi_line_token_advances_line(self):
+        self.assert_locations(("x", Location(offset=10, line=2, column=6)))
+
+    @args("ab@\n@cd")
+    def test_unmatched_text_advances_location(self):
+        self.assert_locations(
+            ("ab", Location(offset=0, line=1, column=1)),
+            ("cd", Location(offset=5, line=2, column=2)),
+        )
+
+
+class TestFrozenModels(TestCase):
+    def test_token_is_frozen(self):
+        token = Token(
+            rule=rule("ID", "[a-z]+"), literal="a", location=Location(0, 1, 1)
+        )
+        with self.assertRaises(FrozenInstanceError):
+            token.literal = "b"  # ty: ignore[invalid-assignment]
+
+    def test_location_is_frozen(self):
+        with self.assertRaises(FrozenInstanceError):
+            Location(0, 1, 1).line = 2  # ty: ignore[invalid-assignment]
 
 
 class TestScannerReuse(TestCase):

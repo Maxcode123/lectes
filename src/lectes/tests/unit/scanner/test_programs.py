@@ -27,7 +27,7 @@ class TestProgram(TestCase):
         scanner.set_unmatched_handler(self.unmatched.append)
         for r in rules:
             if r.name in self.SKIP:
-                scanner.set_handler(r, lambda _literal, _rule: None)
+                scanner.set_handler(r, lambda _token: None)
         return [(t.name, t.literal) for t in scanner.scan(text)]
 
     def assert_lexemes(self, *lexemes):
