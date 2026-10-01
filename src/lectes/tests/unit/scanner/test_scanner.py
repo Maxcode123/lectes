@@ -5,7 +5,13 @@ from unittest_extensions import args, TestCase
 from lectes.config.models import Rule, Configuration
 from lectes.engine.models import Regex
 from lectes.engine.errors import RegexPatternError
-from lectes.scanner.models import Location, Token
+from lectes.errors import LectesError
+from lectes.scanner.errors import (
+    ScannerConfigurationError,
+    ScannerError,
+    UnmatchedTextError,
+)
+from lectes.scanner.models import Location, Token, UnmatchedText
 from lectes.scanner.scanner import Scanner
 
 
@@ -17,7 +23,7 @@ class TestScanner(TestCase):
     def subject(self, text):
         self.unmatched = []
         scanner = self.scanner()
-        scanner.set_unmatched_handler(self.unmatched.append)
+        scanner.set_unmatched_handler(lambda u: self.unmatched.append(u.text))
         return list(scanner.scan(text))
 
     def scanner(self):
@@ -674,7 +680,7 @@ class TestRoundTrip(TestCase):
     def subject(self, text):
         pieces = []
         scanner = Scanner(Configuration(self.RULES))
-        scanner.set_unmatched_handler(pieces.append)
+        scanner.set_unmatched_handler(lambda u: pieces.append(u.text))
         for r in self.RULES:
             scanner.set_handler(r, lambda token: pieces.append(token.literal))
         list(scanner.scan(text))
@@ -818,6 +824,77 @@ class TestFrozenModels(TestCase):
     def test_location_is_frozen(self):
         with self.assertRaises(FrozenInstanceError):
             Location(0, 1, 1).line = 2  # ty: ignore[invalid-assignment]
+
+
+class TestUnmatchedTextRaisesByDefault(TestCase):
+    RULES = [rule("ID", "[a-z]+"), rule("WS", "[ \n]+")]
+
+    def subject(self, text):
+        return list(Scanner(Configuration(self.RULES)).scan(text))
+
+    def assert_unmatched_error(self, text, location):
+        with self.assertRaises(UnmatchedTextError) as cm:
+            self.result()
+        self.assertEqual(cm.exception.unmatched, UnmatchedText(text, location))
+        return cm.exception
+
+    @args("ab@cd")
+    def test_in_the_middle_of_a_line(self):
+        self.assert_unmatched_error("@", Location(offset=2, line=1, column=3))
+
+    @args("ab\n  @@ cd")
+    def test_whole_run_on_second_line(self):
+        self.assert_unmatched_error("@@", Location(offset=5, line=2, column=3))
+
+    @args("ab@")
+    def test_trailing_at_end_of_input(self):
+        self.assert_unmatched_error("@", Location(offset=2, line=1, column=3))
+
+    @args("ab@cd")
+    def test_message(self):
+        error = self.assert_unmatched_error("@", Location(2, 1, 3))
+        self.assertEqual(str(error), "unmatched text '@' at line 1, column 3")
+
+    @args("ab@cd")
+    def test_error_hierarchy(self):
+        error = self.assert_unmatched_error("@", Location(2, 1, 3))
+        self.assertIsInstance(error, ScannerError)
+        self.assertIsInstance(error, LectesError)
+
+    def test_tokens_before_unmatched_text_are_yielded(self):
+        tokens = Scanner(Configuration(self.RULES)).scan("ab @")
+        self.assertEqual([next(tokens).literal, next(tokens).literal], ["ab", " "])
+        with self.assertRaises(UnmatchedTextError):
+            next(tokens)
+
+
+class TestIgnoreUnmatched(TestCase):
+    RULES = [rule("ID", "[a-z]+"), rule("WS", "[ \n]+")]
+
+    def scanner(self):
+        return Scanner(Configuration(self.RULES), ignore_unmatched=True)
+
+    def test_unmatched_text_is_skipped(self):
+        tokens = self.scanner().scan("ab@\n#cd@")
+        self.assertEqual(
+            [(t.literal, t.location) for t in tokens],
+            [
+                ("ab", Location(offset=0, line=1, column=1)),
+                ("\n", Location(offset=3, line=1, column=4)),
+                ("cd", Location(offset=5, line=2, column=2)),
+            ],
+        )
+
+    def test_setting_unmatched_handler_raises(self):
+        with self.assertRaises(ScannerConfigurationError):
+            self.scanner().set_unmatched_handler(lambda _unmatched: None)
+
+    def test_custom_handler_replaces_default_raise(self):
+        received = []
+        scanner = Scanner(Configuration(self.RULES))
+        scanner.set_unmatched_handler(received.append)
+        list(scanner.scan("ab@"))
+        self.assertEqual(received, [UnmatchedText("@", Location(2, 1, 3))])
 
 
 class TestScannerReuse(TestCase):

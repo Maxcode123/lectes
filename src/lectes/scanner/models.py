@@ -18,6 +18,17 @@ class Location:
 
 
 @dataclass(frozen=True)
+class UnmatchedText:
+    """
+    Represents a contiguous run of scanned text that no rule matched, and the
+    location where it starts.
+    """
+
+    text: str
+    location: Location
+
+
+@dataclass(frozen=True)
 class Token:
     """
     Represents a token returned by the scanner.

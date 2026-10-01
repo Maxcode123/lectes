@@ -24,7 +24,7 @@ class TestProgram(TestCase):
         self.unmatched = []
         rules = self.rules()
         scanner = Scanner(Configuration(rules))
-        scanner.set_unmatched_handler(self.unmatched.append)
+        scanner.set_unmatched_handler(lambda u: self.unmatched.append(u.text))
         for r in rules:
             if r.name in self.SKIP:
                 scanner.set_handler(r, lambda _token: None)

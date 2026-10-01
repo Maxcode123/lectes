@@ -93,15 +93,40 @@ print(ids)
 
 ### Handling unmatched text
 
-The default behaviour of the scanner is to print the text that does not match
-any rule. The default behaviour can be changed by defining a custom handler for
-unmatched text.
+By default, the scanner raises an `UnmatchedTextError` when part of the text
+does not match any rule. Each contiguous run of unmatched text is reported
+once, together with the location where it starts. Since `scan` is a generator,
+the tokens before the unmatched text have already been yielded when the error
+is raised.
 
 ```python
+from lectes.scanner.errors import UnmatchedTextError
+
+try:
+  tokens = list(scanner.scan("for var in array?"))
+except UnmatchedTextError as e:
+  print(e)  # unmatched text '?' at line 1, column 17
+  print(e.unmatched.text, e.unmatched.location.line, e.unmatched.location.column)
+```
+
+To skip unmatched text instead, create the scanner with `ignore_unmatched=True`.
+
+```python
+scanner = Scanner(config, ignore_unmatched=True)
+```
+
+To handle unmatched text yourself, define a custom handler. It receives an
+`UnmatchedText` with the `text` and its `location`, and replaces the default
+behaviour of raising an error. A custom handler cannot be combined with
+`ignore_unmatched=True`; trying to set one raises a `ScannerConfigurationError`.
+
+```python
+from lectes.scanner.models import UnmatchedText
+
 unmatched_text = []
 
-def handler(unmatched: str) -> None:
-  unmatched_text.append(unmatched)
+def handler(unmatched: UnmatchedText) -> None:
+  unmatched_text.append(unmatched.text)
 
 scanner.set_unmatched_handler(handler)
 ```
