@@ -81,6 +81,18 @@ class Regex:
 
         return Match.from_re(match)
 
+    def match_prefix(self, string: str, pos: int = 0) -> str | None:
+        """
+        If the regular expression matches the string starting exactly at pos,
+        return the matched text. Return None if there is no match at pos.
+        """
+        match = self._compiled_pattern().match(string, pos)
+
+        if match is None:
+            return None
+
+        return match.group()
+
     def _compiled_pattern(self) -> re.Pattern:
         if self._re_pattern is None:
             self._re_pattern = self._compile_pattern()
