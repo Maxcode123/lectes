@@ -148,3 +148,19 @@ class TestRegexSearch(TestCase):
     @args(pattern="[a-zA-Z2-6]", string="5")
     def test_letter_and_numeric_class(self):
         self.assertResultTrue()
+
+
+class TestRegexEquality(TestCase):
+    def test_same_pattern_equal(self):
+        self.assertEqual(Regex("a+"), Regex("a+"))
+
+    def test_different_pattern_not_equal(self):
+        self.assertNotEqual(Regex("a"), Regex("b"))
+
+    def test_equal_regexes_have_equal_hashes(self):
+        self.assertEqual(hash(Regex("a+")), hash(Regex("a+")))
+
+
+class TestInvalidRegex(TestCase):
+    def test_repr_of_invalid_pattern_does_not_raise(self):
+        repr(Regex("("))
