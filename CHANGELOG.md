@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.4.1 - Unreleased
+
+### Added
+
+- `lectes --help` ends with usage examples and a sample grammar file.
+
+### Changed
+
+- Running `lectes` with no arguments prints the help and exits 0, instead of a
+  usage error.
+
 ## 0.4.0 - 2026-10-02
 
 ### Added

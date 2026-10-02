@@ -8,6 +8,7 @@ tokens to other tools.
 lectes GRAMMAR [INPUT]
 ```
 
+Running `lectes` with no arguments prints the help, as `lectes --help` does.
 See [Installation](installation.md) for how to put `lectes` on your `PATH`.
 
 ## Grammar files
