@@ -133,17 +133,38 @@ scanner.set_unmatched_handler(handler)
 
 ### Debugging
 
-The `debug` argument can be passed in order to print debug logs while scanning.
+The `debug` argument can be passed in order to print the scanner's matches and
+unmatched text to stderr while scanning.
 
 ```python
 scanner = Scanner(config, debug=True)
 ```
 
-If the scanner has already been initialized without the debug flag, the log level
-can also be set to `DEBUG` by accessing the scanner's logger.
+```
+DEBUG: rule ID matched: 'somevar'
+DEBUG: unmatched: '@'
+```
+
+Only this scanner's events are printed; other scanners are not affected.
+
+If the scanner has already been initialized without the debug flag, debug output
+can also be turned on by accessing the scanner's logger.
 
 ```python
 from lectes import LogLevel
 
 scanner.logger().set_level(LogLevel.DEBUG)
+```
+
+#### Using standard logging
+
+lectes logs through the standard `logging` module, under the `lectes` logger.
+To send the events of every scanner to your application's logging setup,
+configure that logger at `DEBUG` level instead of passing `debug=True`.
+
+```python
+import logging
+
+logging.basicConfig(format="%(name)s: %(message)s")
+logging.getLogger("lectes").setLevel(logging.DEBUG)
 ```
