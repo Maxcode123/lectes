@@ -19,6 +19,20 @@ from lectes.scanner.scanner import Scanner
 
 _STDIN = "-"
 _POSITION_WIDTH = 8
+_EXAMPLES = r"""examples:
+  lectes grammar.lectes input.txt                scan a file
+  echo '12 + 3' | lectes grammar.lectes          scan stdin
+  lectes grammar.lectes input.txt --format json  print JSON Lines
+  lectes grammar.lectes --check                  only validate the grammar
+
+  A grammar file has one rule per line: a name, whitespace, then the regex.
+  Blank lines and lines starting with # are ignored.
+
+  # arithmetic.lectes
+  INT     [0-9]+
+  PLUS    \+
+  WS      \s+
+"""
 
 
 class _InputError(Exception):
@@ -77,6 +91,8 @@ def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="lectes",
         description="Scan a file or stdin with a lectes grammar and print the tokens.",
+        epilog=_EXAMPLES,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("grammar", help="grammar file, one 'NAME  regex' rule per line")
     parser.add_argument(

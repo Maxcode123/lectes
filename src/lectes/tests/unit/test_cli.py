@@ -10,6 +10,7 @@ from unittest import mock
 from unittest_extensions import args, TestCase
 
 from lectes.cli import main
+from lectes.config.models import Configuration
 
 GRAMMAR = "INT [0-9]+\nPLUS \\+\nWS \\s+\n"
 
@@ -319,6 +320,39 @@ class TestCliOptions(TestCli):
         no_arguments = self.stdout.getvalue()
         self.subject("--help")
         self.assertEqual(no_arguments, self.stdout.getvalue())
+
+    @args("--help")
+    def test_help_ends_with_examples(self):
+        self.assertResult(0)
+        help = self.stdout.getvalue()
+        self.assertIn("\nexamples:\n", help)
+        self.assertLess(help.index("options:"), help.index("examples:"))
+
+    @args("--help")
+    def test_help_examples_keep_their_layout(self):
+        self.result()
+        lines = self.stdout_lines()
+
+        for example in [
+            "  lectes grammar.lectes input.txt                scan a file",
+            "  echo '12 + 3' | lectes grammar.lectes          scan stdin",
+            "  lectes grammar.lectes input.txt --format json  print JSON Lines",
+            "  lectes grammar.lectes --check                  only validate the grammar",
+            "  INT     [0-9]+",
+            "  PLUS    \\+",
+            "  WS      \\s+",
+        ]:
+            self.assertIn(example, lines)
+
+    @args("--help")
+    def test_help_example_grammar_is_valid(self):
+        self.result()
+        help = self.stdout.getvalue()
+        grammar = help[help.index("  # arithmetic.lectes") :]
+        self.assertSequenceEqual(
+            [rule.name for rule in Configuration.from_text(grammar).rules],
+            ["INT", "PLUS", "WS"],
+        )
 
     @args("--format", "json")
     def test_grammar_is_required(self):
