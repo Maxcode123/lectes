@@ -28,6 +28,9 @@ PLUS    \+
 WS      \s+
 ```
 
+**Try it in the playground:** paste a grammar into [lectes.dev](https://lectes.dev)
+to see its tokens as you type, and why each rule won.
+
 Rule names start with a letter or underscore and contain only letters, digits
 and underscores. Regexes use Python's [`re`](https://docs.python.org/3/library/re.html)
 syntax and are written as-is, with no quoting or escaping beyond what the regex
