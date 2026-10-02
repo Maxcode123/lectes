@@ -1,3 +1,5 @@
+import logging
+
 from .config.models import Rule as Rule, Configuration as Configuration
 from .engine.models import Regex as Regex
 from .scanner.scanner import Scanner as Scanner
@@ -14,3 +16,5 @@ from .scanner.errors import (
     ScannerConfigurationError as ScannerConfigurationError,
     UnmatchedTextError as UnmatchedTextError,
 )
+
+logging.getLogger("lectes").addHandler(logging.NullHandler())

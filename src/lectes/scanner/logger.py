@@ -1,5 +1,9 @@
 import logging
+import sys
 from enum import Enum
+
+_logger = logging.getLogger("lectes.scanner")
+_debug_handler: logging.Handler | None = None
 
 
 class LogLevel(Enum):
@@ -10,59 +14,62 @@ class LogLevel(Enum):
     DEBUG = "DEBUG"
 
 
-class Logger:
+class _StderrHandler(logging.StreamHandler):
     """
-    Logger class for the scanner.
+    Writes to whatever `sys.stderr` is when a record is emitted, rather than
+    the stream at construction time, so `contextlib.redirect_stderr` works.
     """
 
     def __init__(self) -> None:
-        self._logger = None
-        self._handler = None
-        self._formatter = None
+        logging.Handler.__init__(self)
+
+    @property
+    def stream(self):  # type: ignore[override]
+        return sys.stderr
+
+
+def _get_debug_handler() -> logging.Handler:
+    global _debug_handler
+
+    if _debug_handler is None:
+        _debug_handler = _StderrHandler()
+        _debug_handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+
+    return _debug_handler
+
+
+class Logger:
+    """
+    Logger class for the scanner.
+
+    Records always go to the standard `lectes.scanner` logger, so configuring
+    the `lectes` logger at DEBUG level shows the events of every scanner.
+    Setting this logger's level to `LogLevel.DEBUG` additionally prints its
+    own scanner's events to stderr, without changing any logger's level or
+    attaching any handler.
+    """
+
+    def __init__(self) -> None:
+        self._debug = False
 
     def set_level(self, level: LogLevel) -> None:
-        self.logger().setLevel(self._map_level(level))
-        self.handler().setLevel(self._map_level(level))
+        self._debug = level is LogLevel.DEBUG
 
-    def debug(self, message: str) -> None:
-        self.logger().debug(message)
+    def enabled(self) -> bool:
+        """
+        Return whether a debug message would be emitted anywhere.
+        """
+        return self._debug or _logger.isEnabledFor(logging.DEBUG)
+
+    def debug(self, message: str, *args: object) -> None:
+        if _logger.isEnabledFor(logging.DEBUG):
+            _logger.debug(message, *args)
+
+        if self._debug:
+            record = _logger.makeRecord(
+                _logger.name, logging.DEBUG, "", 0, message, args, None
+            )
+            _get_debug_handler().handle(record)
 
     def logger(self) -> logging.Logger:
-        if self._logger is None:
-            self._logger = self._build_logger()
-
-        return self._logger
-
-    def handler(self) -> logging.StreamHandler:
-        if self._handler is None:
-            self._handler = self._build_handler()
-
-        return self._handler
-
-    def formatter(self) -> logging.Formatter:
-        if self._formatter is None:
-            self._formatter = self._build_formatter()
-
-        return self._formatter
-
-    def _build_logger(self) -> logging.Logger:
-        logger = logging.getLogger(__name__)
-        logger.addHandler(self.handler())
-
-        return logger
-
-    def _build_handler(self) -> logging.StreamHandler:
-        handler = logging.StreamHandler()
-        handler.setFormatter(self.formatter())
-
-        return handler
-
-    def _build_formatter(self) -> logging.Formatter:
-        return logging.Formatter("%(levelname)s: %(message)s")
-
-    def _map_level(self, level: LogLevel) -> int:
-        match level:
-            case LogLevel.DEBUG:
-                return logging.DEBUG
-            case _:
-                return logging.INFO
+        return _logger
