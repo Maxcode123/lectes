@@ -10,6 +10,10 @@ from .scanner.models import (
     UnmatchedText as UnmatchedText,
 )
 from .errors import LectesError as LectesError
+from .config.errors import (
+    GrammarError as GrammarError,
+    GrammarWarning as GrammarWarning,
+)
 from .engine.errors import RegexPatternError as RegexPatternError
 from .scanner.errors import (
     ScannerError as ScannerError,
