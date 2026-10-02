@@ -44,6 +44,10 @@ config = Configuration.from_text(
 Use a raw string, or read the grammar from a file, so that backslashes in the
 regexes reach the parser unchanged.
 
+**Try it in the playground:** [lectes.dev](https://lectes.dev) scans as you
+type, so it's a quick way to work a grammar out before putting it in your code.
+Its **Export as Python** button gives you the `Configuration.from_text` call.
+
 If the text has errors, `from_text` raises a `GrammarError`. Its `problems`
 list holds every error found, as `(line, message)` pairs, so all of them can be
 fixed at once. `line` is `None` for problems that aren't tied to a line, such as

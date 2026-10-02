@@ -8,6 +8,7 @@ nav:
     - Installation: installation.md
     - Usage: usage.md
     - Command line: cli.md
+    - Playground: https://lectes.dev
 
   - API Documentation:
     - config: config.md
