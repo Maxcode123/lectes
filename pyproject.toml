@@ -8,11 +8,14 @@ include = ["lectes*"]
 
 [project]
 name = "lectes"
-version = "0.3.1"
+version = "0.4.0"
 description = "Simple Python lexer generator"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
+
+[project.scripts]
+lectes = "lectes.cli:main"
 
 [dependency-groups]
 dev = [

@@ -19,6 +19,61 @@ config = Configuration(
 )
 ```
 
+### Defining the rules in a grammar
+
+The same rules can be written as grammar text, one rule per line: a name,
+whitespace, then the regex, which is the rest of the line. Blank lines and
+lines starting with `#` are ignored. This is the format the
+[`lectes` command](cli.md) reads.
+
+```python
+from lectes import Configuration
+
+config = Configuration.from_text(
+  r"""
+  # a tiny language
+  FOR         for
+  IN          in
+  ID          [a-zA-Z_][a-zA-Z_0-9]*
+  COLON       :
+  WHITESPACE  ( )
+  """
+)
+```
+
+Use a raw string, or read the grammar from a file, so that backslashes in the
+regexes reach the parser unchanged.
+
+If the text has errors, `from_text` raises a `GrammarError`. Its `problems`
+list holds every error found, as `(line, message)` pairs, so all of them can be
+fixed at once. `line` is `None` for problems that aren't tied to a line, such as
+an empty grammar.
+
+```python
+from lectes import GrammarError
+
+try:
+  Configuration.from_text("9X a\nID")
+except GrammarError as e:
+  print(e.problems)  # [(1, "invalid rule name '9X'"), (2, "rule 'ID' has no pattern")]
+```
+
+Rules that are valid but probably not what was intended, such as one that can
+match the empty string, emit a `GrammarWarning` through the `warnings` module.
+Each warning carries its `line` and `message`.
+
+```python
+import warnings
+from lectes import GrammarWarning
+
+with warnings.catch_warnings(record=True) as caught:
+  warnings.simplefilter("always", GrammarWarning)
+  config = Configuration.from_text("OPT x?")
+
+for warning in caught:
+  print(warning.message.line, warning.message.message)
+```
+
 ## Scanning
 
 The scanner only requires a `Configuration` of `Rule`s to be initialized, it
