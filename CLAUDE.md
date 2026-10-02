@@ -119,7 +119,7 @@ shared with lectes-web, which lives in `../lectes-web`.
 2. Merge into `main` with `--no-ff`, run `make test`, then
    `git push origin main`.
 3. Run `git tag X.Y.Z` (no `v` prefix), then `git push origin X.Y.Z`.
-4. Run `rm -rf build && make clean build`. Check that `dist/` holds only
+4. Run `make clean build`. Check that `dist/` holds only
    X.Y.Z, and that the wheel has what you expect (e.g.
    `unzip -l dist/*.whl`).
 5. Run `make publish`. `UV_PUBLISH_TOKEN` comes from `.envrc` (via direnv, and
@@ -131,9 +131,6 @@ shared with lectes-web, which lives in `../lectes-web`.
 
 Pitfalls:
 
-- The Makefile targets aren't `.PHONY`. A leftover `build/` directory makes
-  `make build` print "up to date" and build nothing. It's created by setuptools,
-  e.g. by `uvx --from .`. So always `rm -rf build` first.
 - Never build unreleased code into `dist/` under an already-released version
   number. To try a local build, use `uv build -o <scratch dir>` or
   `uvx --from . lectes`.
