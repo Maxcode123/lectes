@@ -14,6 +14,9 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = []
 
+[project.scripts]
+lectes = "lectes.cli:main"
+
 [dependency-groups]
 dev = [
     "mkdocs>=1.6.1",
