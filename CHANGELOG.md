@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.4.0 - Unreleased
+
+### Added
+
+- A `lectes` command that scans a file or stdin with a grammar file and prints
+  the tokens, aligned or as JSON Lines (`--format json`). Install it with
+  `uv tool install lectes` or `pipx install lectes`, or run it with
+  `python -m lectes`. Exit codes: 0 on success, 1 on unmatched text, 2 on a
+  usage, grammar or I/O error.
+- `Configuration.from_text` builds a configuration from grammar text, one
+  `NAME  regex` rule per line with `#` comments. This is the format used by the
+  lectes-web playground.
+- `GrammarError`, raised by `from_text` with every error in the text as
+  `(line, message)` pairs in `problems`.
+- `GrammarWarning`, emitted by `from_text` for each rule that can match the
+  empty string, with its `line` and `message`.
+
 ## 0.3.1 - 2026-10-02
 
 ### Fixed

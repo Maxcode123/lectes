@@ -7,8 +7,10 @@ nav:
     - What is lectes?: index.md
     - Installation: installation.md
     - Usage: usage.md
+    - Command line: cli.md
 
   - API Documentation:
+    - config: config.md
     - scanner: scanner.md
  
 theme:
