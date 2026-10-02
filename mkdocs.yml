@@ -1,5 +1,5 @@
 site_name: lectes
-site_url: https://maxcode123.github.io/lectes/
+site_url: https://maximosnikiforakis.gr/lectes/
 repo_url: https://github.com/Maxcode123/lectes
 repo_name: Maxcode123/lectes
 nav:
@@ -16,25 +16,26 @@ nav:
  
 theme:
   name: material
+  font: false
+  logo: assets/favicon.svg
+  favicon: assets/favicon.svg
   features:
     - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
     - navigation.path
     - content.code.copy
+  # Dark only, like the lectes.dev playground: arcade.css maps slate's colours
+  # onto the arcade palette.
   palette:
-    - scheme: default
-      primary: deep orange
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - scheme: slate
-      primary: deep orange
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+    scheme: slate
+    primary: custom
+    accent: custom
   icon:
     repo: fontawesome/brands/github
+
+extra_css:
+  - stylesheets/arcade.css
 
 plugins:
 - mkdocstrings
