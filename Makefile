@@ -1,3 +1,5 @@
+.PHONY: lint format type-check install-local-package test start-doc-server deploy-documentation build clean publish
+
 lint:
 	ruff check --exclude src/lectes/tests
 
