@@ -1,6 +1,29 @@
 # Changelog
 
-## 0.3.0 - Unreleased
+## 0.3.1 - 2026-10-02
+
+### Fixed
+
+- Every scanner added a handler to the shared logger when it scanned, so
+  long-lived processes leaked handlers and debug messages were printed once
+  per handler. Scanners no longer add any handlers.
+- `debug=True` no longer turns on debug output for every other scanner in the
+  process.
+
+### Changed
+
+- The scanner logs to the `lectes.scanner` logger instead of
+  `lectes.scanner.logger`, and importing lectes adds a `NullHandler` to the
+  `lectes` logger. Configure `lectes` at `DEBUG` level to get every scanner's
+  events through standard logging.
+- Debug messages are only built when they will be emitted, which makes
+  scanning faster when debug output is off.
+- Debug messages show literals and unmatched text with `repr`, so newlines and
+  other special characters are visible, e.g. `unmatched: '\n'`.
+- Removed `Logger.handler()` and `Logger.formatter()`. `Logger` is not exported
+  from `lectes`, and `Scanner.logger().set_level(LogLevel.DEBUG)` still works.
+
+## 0.3.0 - 2026-10-01
 
 ### Breaking changes
 

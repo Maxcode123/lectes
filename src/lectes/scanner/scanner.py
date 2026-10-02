@@ -72,6 +72,8 @@ class Scanner:
         """
         cursor = _Cursor()
         unmatched_location = None
+        logger = self.logger()
+        debug = logger.enabled()
 
         while cursor.offset < len(text):
             rule, literal = self._longest_match(text, cursor.offset)
@@ -92,7 +94,9 @@ class Scanner:
                 )
                 unmatched_location = None
 
-            self.logger().debug(f"rule {rule.name} matched: '{literal}'")
+            if debug:
+                logger.debug("rule %s matched: %r", rule.name, literal)
+
             token = Token(rule=rule, literal=literal, location=cursor.location())
             result = self._matched_handlers[rule](token)
 
@@ -171,7 +175,7 @@ class Scanner:
         return best_rule, best_literal
 
     def _flush_unmatched(self, unmatched: UnmatchedText) -> None:
-        self.logger().debug(f"unmatched: '{unmatched.text}'")
+        self.logger().debug("unmatched: %r", unmatched.text)
 
         if self._ignore_unmatched:
             return
