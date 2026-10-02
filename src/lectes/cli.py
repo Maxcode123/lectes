@@ -31,8 +31,16 @@ def main(argv: list[str] | None = None) -> int:
     """
     Run the command with the given arguments and return its exit code: 0 on
     success, 1 on unmatched text and 2 on a usage, grammar or I/O error.
+
+    With no arguments at all, print the help, as `--help` does.
     """
-    arguments = _parser().parse_args(argv)
+    parser = _parser()
+
+    if not (sys.argv[1:] if argv is None else argv):
+        parser.print_help()
+        return 0
+
+    arguments = parser.parse_args(argv)
 
     try:
         codecs.lookup(arguments.encoding)

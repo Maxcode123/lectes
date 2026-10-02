@@ -307,6 +307,20 @@ class TestCliOptions(TestCli):
         self.assertEqual(self.stdout.getvalue(), f"lectes {version('lectes')}\n")
 
     @args()
+    def test_no_arguments_prints_help(self):
+        self.assertResult(0)
+        self.assertTrue(self.stdout.getvalue().startswith("usage: lectes"))
+        self.assertIn("--ignore-unmatched", self.stdout.getvalue())
+        self.assertEqual(self.stderr.getvalue(), "")
+
+    @args()
+    def test_no_arguments_prints_the_same_as_help(self):
+        self.result()
+        no_arguments = self.stdout.getvalue()
+        self.subject("--help")
+        self.assertEqual(no_arguments, self.stdout.getvalue())
+
+    @args("--format", "json")
     def test_grammar_is_required(self):
         self.assertResult(2)
         self.assertIn("usage: lectes", self.stderr.getvalue())
@@ -336,6 +350,13 @@ class TestModule(TestCase):
             capture_output=True,
             text=True,
         )
+
+    def test_no_arguments_prints_help(self):
+        completed = subprocess.run(
+            [sys.executable, "-m", "lectes"], capture_output=True, text=True
+        )
+        self.assertEqual(completed.returncode, 0)
+        self.assertTrue(completed.stdout.startswith("usage: lectes"))
 
     def test_runs_as_module(self):
         completed = self.result()
