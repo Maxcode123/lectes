@@ -1,9 +1,24 @@
+<p align="center">
+  <a href="https://lectes.dev">
+    <img src="https://raw.githubusercontent.com/Maxcode123/lectes/main/docs/assets/banner.png" alt="lectes: name the rules, get the tokens" width="100%">
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://lectes.dev"><b>▶ Playground</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://maximosnikiforakis.gr/lectes/"><b>Documentation</b></a>
+  &nbsp;·&nbsp;
+  <a href="https://pypi.org/project/lectes/"><b>PyPI</b></a>
+</p>
+
 # lectes
 
 `lectes` is a simple Python scanner generator. It can be used to easily define
 scanners with Python code.
 
-**Documentation:** <https://maxcode123.github.io/lectes/>
+**Try it in the playground:** [lectes.dev](https://lectes.dev) lets you write a
+grammar and see the tokens as you type, right in your browser.
 
 **Example**
 
@@ -49,7 +64,7 @@ $ echo '12 + 3' | lectes arithmetic.lectes
 ```
 
 Use `--format json` for JSON Lines output. See the
-[command-line docs](https://maxcode123.github.io/lectes/cli/) for every option.
+[command-line docs](https://maximosnikiforakis.gr/lectes/cli/) for every option.
 
 ## Installation
 
