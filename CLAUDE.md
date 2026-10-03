@@ -53,6 +53,12 @@ All code lives in `src/lectes/`:
 The grammar format is one `NAME  regex` rule per line, with `#` comments. It's
 shared with lectes-web, which lives in `../lectes-web`.
 
+The docs site matches lectes-web's arcade look. `docs/stylesheets/arcade.css`
+maps Material's dark (`slate`) palette onto the colours in lectes-web's
+`app.css`. The fonts in `docs/assets/fonts/` are copied from there. The README
+banner is `docs/assets/banner.png`. The README links to it with a relative path,
+so it renders on GitHub but not on PyPI.
+
 ## Rules
 
 - **No runtime dependencies.** Use the stdlib only, the CLI included. Adding a
